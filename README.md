@@ -115,7 +115,7 @@ Track grocery prices across online stores, store them in DynamoDB, visualize the
    └──────────┬───────────┘
               │
               v
-   https://d123456.cloudfront.net
+   https://dtwq2wflaat5o.cloudfront.net/
 ```
 
 ---
@@ -397,7 +397,7 @@ aws lambda update-function-configuration \
 # Create rule
 aws events put-rule \
   --name DailyPriceScraper \
-  --schedule-expression "cron(0 9 * * ? *)" \
+  --schedule-expression "cron(0 6 * * ? *)" \
   --region ap-south-1
 
 # Add Lambda as target
