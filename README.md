@@ -154,7 +154,7 @@ grocery-price-tracker/
 
 **EventBridge Rule:**
 ```
-- Schedule: cron(0 9 * * ? *)  [Daily at 9 AM UTC]
+- Schedule: cron(0 9 * * ? *)  [Daily at 6 AM UTC]
 - Target: Lambda → scrapePrices
 ```
 
