@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Grocery Price Dashboard</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        h1 { color: #2a7ae2; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h1>Grocery Price Dashboard</h1>
+
+<p>Latest grocery prices fetched from AWS DynamoDB via API:</p>
+
+<div id="data">Loading...</div>
+
+<script>
+const apiUrl = "https://i2k9opyu95.execute-api.ap-south-1.amazonaws.com";
+
+fetch(apiUrl)
+  .then(res => res.json())
+  .then(data => {
+      let html = "<table><tr><th>Item</th><th>Price</th><th>Timestamp</th></tr>";
+
+      Object.values(data).forEach(item => {
+          html += `<tr>
+              <td>${item.item}</td>
+              <td>${item.price}</td>
+              <td>${item.timestamp}</td>
+          </tr>`;
+      });
+
+      html += "</table>";
+      document.getElementById("data").innerHTML = html;
+  })
+  .catch(err => {
+      document.getElementById("data").innerHTML = "Error loading data.";
+      console.error(err);
+  });
+</script>
+
+</body>
+</html>
