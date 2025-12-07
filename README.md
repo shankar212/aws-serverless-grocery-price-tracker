@@ -5,7 +5,6 @@ Track grocery prices across online stores, store them in DynamoDB, visualize the
 ![AWS](https://img.shields.io/badge/AWS-FF9900?style=flat&logo=amazonaws&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.9+-3776ab?style=flat&logo=python&logoColor=white)
 ![Serverless](https://img.shields.io/badge/Serverless-FD5750?style=flat&logo=serverless&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
 
