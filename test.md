@@ -1,8 +1,5 @@
 # 🧪 Lambda Alert Test Instructions
 
-Great --- your **alert Lambda is successfully updated**.\
-Let's **test it thoroughly** to confirm email alerts are working!
-
 ------------------------------------------------------------------------
 
 ## ✅ STEP 1 --- Insert a Test Item (Previous Price)
