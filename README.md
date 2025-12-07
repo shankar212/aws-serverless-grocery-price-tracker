@@ -4,6 +4,139 @@ Track grocery prices across online stores, store them in DynamoDB, visualize the
 
 ![AWS](https://img.shields.io/badge/AWS-FF9900?style=flat&logo=amazonaws&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.9+-3776ab?style=flat&logo=python&logoColor=white)
+<<<<<<< HEAD
+=======
+
+## 🔐 **IAM — Roles & Permissions (Interview Ready)**
+
+IAM is the core security layer in this project. Below is a clear, interview-ready explanation of the roles, permissions and why each is required.
+
+### ✅ **1. IAM Role for Scraper Lambda**
+
+**Role Name:** `lambda-scraper-role`
+
+**Why needed?**
+
+The scraper Lambda must:
+
+- read/write to DynamoDB
+- write logs to CloudWatch
+
+**Policies attached:**
+
+| Permission             | Why?                                      |
+| ---------------------- | ----------------------------------------- |
+| `dynamodb:PutItem`     | Store new scraped price into the database |
+| `dynamodb:UpdateItem`  | Update existing item prices               |
+| `logs:CreateLogGroup`  | Create log group first time               |
+| `logs:CreateLogStream` | Create stream for each Lambda run         |
+| `logs:PutLogEvents`    | Write log lines                           |
+
+📌 **Without this role, scraper Lambda cannot store data or log errors.**
+
+---
+
+### ✅ **2. IAM Role for Price Alert Lambda**
+
+**Role Name:** `lambda-price-tracker-role`
+
+**Why needed?**
+
+This Lambda is triggered by DynamoDB Streams. It needs to:
+
+- read old & new values from DynamoDB stream
+- publish price-drop alerts to SNS
+- write logs to CloudWatch
+
+**Policies attached:**
+
+| Permission                | Why?                                       |
+| ------------------------- | ------------------------------------------ |
+| `sns:Publish`             | Send email alerts to users                 |
+| `dynamodb:GetRecords`     | Read price updates from the stream         |
+| `dynamodb:DescribeStream` | Allow Lambda to connect to DynamoDB Stream |
+| `logs:*`                  | Log to CloudWatch                          |
+
+📌 Initially your alert Lambda failed due to missing `sns:Publish`.
+You can attach the managed policy for quick fix during development:
+
+```
+aws iam attach-role-policy \
+  --role-name lambda-price-tracker-role \
+  --policy-arn arn:aws:iam::aws:policy/AmazonSNSFullAccess
+```
+
+---
+
+### ✅ **3. IAM User for AWS CLI**
+
+**User Name:** `cli-user`
+
+**Why needed?**
+
+You used AWS CLI to:
+
+- create bucket
+- deploy Lambda
+- upload policies
+- create DynamoDB table
+
+**Policies attached:**
+
+| Policy                                                | Why                                            |
+| ----------------------------------------------------- | ---------------------------------------------- |
+| `AdministratorAccess` (recommended only for learning) | Allows performing CLI actions without blocking |
+
+📌 In production, you would restrict permissions more tightly.
+
+---
+
+### ✅ **4. IAM Policy for S3 Public Hosting**
+
+You needed the bucket to be world-readable (for static website hosting):
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PublicReadGetObject",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::grocery-dashboard-shanker/*"
+    }
+  ]
+}
+```
+
+But S3 blocked it initially due to **Block Public Access**. You fixed it by disabling the block.
+
+---
+
+# 🔐 **Summary: How IAM Fits in the Architecture**
+
+```
+                     IAM
+                     |
+         +-----------+-----------+
+         |                       |
+   Lambda Roles            IAM User (CLI)
+         |                       |
++--------+--------+        +-----+----------------+
+| Scraper Lambda  |        | Deploy Lambda, S3,  |
+| Price Alert Lm. |        | DynamoDB via CLI    |
++--------+--------+        +---------------------+
+         |
+         v
+SNS Publishing, DynamoDB Reading, Logging
+```
+
+---
+
+I added this detailed IAM section in a focused place so it's easy to reference during interviews. You can also find related notes under `Security Best Practices`.
+
+>>>>>>> a7502e1 (docs: update README (IAM section + author))
 ![Serverless](https://img.shields.io/badge/Serverless-FD5750?style=flat&logo=serverless&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
 

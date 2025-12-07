@@ -1,6 +1,7 @@
 import re
 import requests
 import boto3
+import time
 from datetime import datetime
 from decimal import Decimal
 
@@ -10,7 +11,7 @@ table = dynamodb.Table('GroceryPrices')
 PRODUCTS = {
     "Daawat Basmati Rice 5kg": 40075197,
     "Aashirvaad Atta 10kg": 126906,
-    "Fortune Sunlite Sunflower Oil 1L": 274145,
+    "Fortune Sunlite Sunflower Oil 500ml": 274145,
     "Tata Salt 1kg": 241600,
     "BB Popular Sugar 5kg": 30005417,
     "Britannia Milk Bikis 500g": 40197802,
@@ -21,11 +22,17 @@ PRODUCTS = {
 }
 
 def extract_price(html):
+    # First try offer_sp
     match = re.search(r'"offer_sp"\s*:\s*([0-9]+\.[0-9]+)', html)
+    
+    # Fallback: prim_price
     if not match:
         match = re.search(r'"prim_price":\{"sp":"([0-9]+\.[0-9]+)"', html)
+
     if match:
+        # ALWAYS convert to Decimal to avoid DynamoDB float errors
         return Decimal(match.group(1))
+    
     return None
 
 def lambda_handler(event, context):
@@ -38,8 +45,13 @@ def lambda_handler(event, context):
 
     for item, product_id in PRODUCTS.items():
         url = f"https://www.bigbasket.com/pd/{product_id}/"
-        response = requests.get(url, headers=headers)
-        html = response.text
+
+        try:
+            response = requests.get(url, headers=headers, timeout=10)
+            html = response.text
+        except Exception as e:
+            results[item] = f"Request failed: {str(e)}"
+            continue
 
         price = extract_price(html)
 
@@ -47,18 +59,21 @@ def lambda_handler(event, context):
             results[item] = "Price not found"
             continue
 
+        # SAVE TO DYNAMODB
         table.put_item(
             Item={
                 "item": item,
                 "timestamp": datetime.utcnow().isoformat(),
-                "price": price,
+                "price": price,         # Decimal ✔
                 "store": "BigBasket"
             }
         )
 
         results[item] = float(price)
 
+        time.sleep(1)  # Prevent rate limiting
+
     return {
-        "message": "All products processed",
+        "message": "Scraper completed successfully",
         "results": results
     }
